@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>通知表所見作成アシスタント（Gemini AI版）</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', sans-serif; background: #f0f4f8; color: #2d3748; line-height: 1.7; }
+.container { max-width: 800px; margin: 0 auto; padding: 20px; }
+header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; border-radius: 16px; margin-bottom: 24px; text-align: center; }
+header h1 { font-size: 1.5em; margin-bottom: 4px; }
+header p { font-size: 0.9em; opacity: 0.9; }
+.card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.card h2 { font-size: 1.15em; color: #4a5568; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+label { display: block; font-weight: bold; margin-bottom: 6px; color: #4a5568; font-size: 0.95em; }
+input[type="text"], textarea { width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1em; font-family: inherit; transition: border-color 0.2s; }
+input[type="text"]:focus, textarea:focus { outline: none; border-color: #667eea; }
+textarea { resize: vertical; min-height: 70px; }
+.btn { display: inline-block; padding: 12px 28px; border: none; border-radius: 8px; font-size: 1em; font-weight: bold; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+.btn-secondary { background: #edf2f7; color: #4a5568; }
+.btn-secondary:hover { background: #e2e8f0; }
+.btn-success { background: linear-gradient(135deg, #48bb78, #38a169); color: white; }
+.btn-success:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(72,187,120,0.4); }
+.btn-danger { background: #fc8181; color: white; }
+.btn-danger:hover { background: #f56565; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.pattern-box { border: 2px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 14px; transition: border-color 0.2s; position: relative; cursor: pointer; }
+.pattern-box:hover { border-color: #a3bffa; }
+.pattern-box.selected { border-color: #667eea; background: #f7f8ff; }
+.pattern-label { font-weight: bold; color: #667eea; margin-bottom: 8px; font-size: 0.95em; }
+.pattern-text { font-size: 1em; line-height: 1.8; }
+.char-count { text-align: right; font-size: 0.85em; color: #718096; margin-top: 4px; }
+.char-count.warn { color: #e53e3e; font-weight: bold; }
+.char-count.ok { color: #38a169; }
+.progress-bar { width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin: 12px 0; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 3px; transition: width 0.5s; }
+.status-msg { text-align: center; padding: 12px; color: #667eea; font-weight: bold; font-size: 0.95em; }
+.data-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.85em; }
+.data-table th, .data-table td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; }
+.data-table th { background: #f7fafc; font-weight: bold; color: #4a5568; }
+.data-table tr:hover { background: #f7f8ff; }
+.hidden { display: none !important; }
+.api-section { background: #fffff0; border: 2px solid #ecc94b; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.api-section label { color: #744210; }
+.api-input-wrap { display: flex; gap: 8px; }
+.api-input-wrap input { flex: 1; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal-content { background: white; border-radius: 16px; padding: 28px; max-width: 500px; width: 90%; }
+.modal-content h3 { margin-bottom: 16px; color: #2d3748; }
+.edit-area { width: 100%; min-height: 120px; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 1em; line-height: 1.8; resize: vertical; }
+.edit-area:focus { outline: none; border-color: #667eea; }
+.info-box { background: #ebf8ff; border-left: 4px solid #3182ce; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 12px 0; font-size: 0.9em; color: #2c5282; }
+.trim-notice { background: #fefcbf; border-left: 4px solid #ecc94b; padding: 10px 14px; border-radius: 0 8px 8px 0; margin-top: 6px; font-size: 0.82em; color: #744210; }
+.quota-info { background: #f0fff4; border: 1px solid #c6f6d5; border-radius: 8px; padding: 10px 14px; margin-top: 10px; font-size: 0.82em; color: #276749; }
+.version-info { text-align: center; padding: 8px; color: #a0aec0; font-size: 0.75em; }
+@media (max-width: 600px) {
+  .container { padding: 12px; }
+  header { padding: 16px; }
+  header h1 { font-size: 1.2em; }
+  .card { padding: 16px; }
+  .btn-group { flex-direction: column; }
+  .btn { width: 100%; text-align: center; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>通知表 所見作成アシスタント</h1>
+    <p>Gemini AI がプロの表現力で2パターンの所見を生成します</p>
+  </header>
+
+  <div class="api-section" id="apiSection">
+    <label>🔑 Gemini APIキーを入力してください</label>
+    <p style="font-size:0.85em; color:#744210; margin: 6px 0 10px;">APIキーは端末に保存され、外部送信はGemini APIへの通信のみです</p>
+    <div class="api-input-wrap">
+      <input type="password" id="apiKeyInput" placeholder="AIzaSy... で始まるキーを貼り付け">
+      <button class="btn btn-primary" onclick="saveApiKey()">保存</button>
+    </div>
+    <p id="apiStatus" style="margin-top:8px; font-size:0.85em;"></p>
+    <div class="quota-info">
+      📊 本日の使用：<strong><span id="usageCount">0</span>回</strong>（モデル：Gemini 2.5 Flash-Lite ／ 無料枠：1日1,000回以上）
+    </div>
+  </div>
+
+  <div class="card" id="step1">
+    <h2>📝 STEP1：生徒の特徴を教えてください</h2>
+    <div style="margin-bottom:14px;">
+      <label>生徒名（番号でもOK）</label>
+      <input type="text" id="studentName" placeholder="例：1番、A子">
+    </div>
+    <div style="margin-bottom:14px;">
+      <label>① 性格・行動面の特徴</label>
+      <textarea id="feature1" placeholder="例：明るく社交的、困っている友人に声をかける思いやりがある"></textarea>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label>② 学習状況</label>
+      <textarea id="feature2" placeholder="例：理科の実験に関心が高い、レポートの考察が丁寧、数学は粘り強く取り組む"></textarea>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label>③ 諸活動への取り組み</label>
+      <textarea id="feature3" placeholder="例：合唱コンクールでパートリーダー、朝練を欠かさず参加"></textarea>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label>④ その他・補足（任意）</label>
+      <textarea id="feature4" placeholder="例：提出物の期限を守れないことがある" style="min-height:50px;"></textarea>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="generateShoken()">✨ 所見を生成する</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="step2">
+    <h2>📄 STEP2：生成された所見（2パターン）</h2>
+    <div class="info-box">同じ切り口で、表現の引き出しを変えた2パターンです。お好みの方を選んでください。</div>
+    <div id="patternsArea"></div>
+    <div id="progressArea" class="hidden">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <p class="status-msg" id="statusMsg">生成中...</p>
+    </div>
+    <div class="btn-group hidden" id="step2Buttons">
+      <button class="btn btn-primary" onclick="selectPattern('A')">パターンAを選択</button>
+      <button class="btn btn-primary" onclick="selectPattern('B')">パターンBを選択</button>
+      <button class="btn btn-secondary" onclick="requestRevision()">🔄 修正を依頼する</button>
+      <button class="btn btn-secondary" onclick="backToStep1()">← 入力に戻る</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="revisionModal">
+    <div class="modal-content">
+      <h3>🔄 修正を依頼する</h3>
+      <label>どのように修正しますか？</label>
+      <textarea id="revisionInput" class="edit-area" placeholder="例：学習面をもっと強調してほしい"></textarea>
+      <div class="btn-group" style="margin-top:14px;">
+        <button class="btn btn-primary" onclick="executeRevision()">再生成する</button>
+        <button class="btn btn-secondary" onclick="closeRevisionModal()">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card hidden" id="step3">
+    <h2>✏️ STEP3：最終編集</h2>
+    <p style="font-size:0.9em; color:#718096; margin-bottom:12px;">必要に応じて手直しして確定してください（126文字以内）</p>
+    <textarea id="finalEdit" class="edit-area" oninput="updateFinalCount()"></textarea>
+    <div class="char-count" id="finalCount">0文字</div>
+    <div class="btn-group">
+      <button class="btn btn-success" onclick="confirmShoken()">✅ この所見で確定する</button>
+      <button class="btn btn-secondary" onclick="backToStep2()">← パターン選択に戻る</button>
+    </div>
+  </div>
+
+  <div class="card" id="dataSection">
+    <h2>📊 作成済みデータ（<span id="dataCount">0</span>件）</h2>
+    <div id="dataTableWrap"><p style="color:#a0aec0; font-size:0.9em;">まだデータがありません</p></div>
+    <div class="btn-group">
+      <button class="btn btn-success" onclick="exportData()" id="exportBtn" disabled>📥 Excel出力</button>
+      <button class="btn btn-secondary" onclick="exportCSV()" id="csvBtn" disabled>📥 CSV出力</button>
+      <button class="btn btn-danger" onclick="clearAllData()" id="clearBtn" disabled>🗑 全データ消去</button>
+    </div>
+  </div>
+
+  <div class="version-info">v4.0 ─ プロライター品質版 ／ Gemini 2.5 Flash-Lite ／ 126文字厳守</div>
+</div>
+
+<script>
+var MIN_CHARS = 110;
+var MAX_CHARS = 126;
+var MODEL_NAME = 'gemini-2.5-flash-lite';
+
+var apiKey = localStorage.getItem('gemini_api_key') || '';
+var shokenData = JSON.parse(localStorage.getItem('shoken_data') || '[]');
+var currentPatterns = { A: '', B: '' };
+var currentTrimmed = { A: false, B: false };
+var currentFeatures = {};
+var revisionHistory = [];
+
+function getTodayKey() { return 'usage_' + new Date().toISOString().slice(0, 10); }
+function getUsageCount() { return parseInt(localStorage.getItem(getTodayKey()) || '0'); }
+function addUsage() { var c = getUsageCount() + 1; localStorage.setItem(getTodayKey(), c); document.getElementById('usageCount').textContent = c; }
+function updateUsageDisplay() { document.getElementById('usageCount').textContent = getUsageCount(); }
+
+window.onload = function() {
+  if (apiKey) {
+    document.getElementById('apiKeyInput').value = '••••••••••••••••';
+    document.getElementById('apiStatus').innerHTML = '✅ APIキー設定済み';
+    document.getElementById('apiStatus').style.color = '#38a169';
+  }
+  updateDataDisplay();
+  updateUsageDisplay();
+};
+
+function saveApiKey() {
+  var key = document.getElementById('apiKeyInput').value.trim();
+  if (!key || key === '••••••••••••••••') { alert('APIキーを入力してください'); return; }
+  if (!key.startsWith('AIza')) { alert('APIキーはAIzaSy...で始まる形式です。'); return; }
+  apiKey = key;
+  localStorage.setItem('gemini_api_key', key);
+  document.getElementById('apiKeyInput').value = '••••••••••••••••';
+  document.getElementById('apiStatus').innerHTML = '✅ APIキーを保存しました！';
+  document.getElementById('apiStatus').style.color = '#38a169';
+}
+
+function convertMotsu(text) {
+  text = text.replace(/持ち前/g, 'もち前');
+  text = text.replace(/持ち味/g, 'もち味');
+  text = text.replace(/気持ち/g, '気もち');
+  text = text.replace(/目標を持って/g, '目標をもって');
+  text = text.replace(/意欲を持って/g, '意欲をもって');
+  text = text.replace(/関心を持/g, '関心をも');
+  text = text.replace(/興味を持/g, '興味をも');
+  text = text.replace(/自信を持/g, '自信をも');
+  text = text.replace(/誇りを持/g, '誇りをも');
+  text = text.replace(/責任感を持/g, '責任感をも');
+  text = text.replace(/思いやりを持/g, '思いやりをも');
+  text = text.replace(/夢を持/g, '夢をも');
+  text = text.replace(/希望を持/g, '希望をも');
+  text = text.replace(/信念を持/g, '信念をも');
+  text = text.replace(/志を持/g, '志をも');
+  text = text.replace(/視野を持/g, '視野をも');
+  text = text.replace(/(\S)を持って/g, function(m, p1) {
+    var ph = ['手','荷物','カバン','鞄','傘','本','ボール'];
+    return ph.some(function(w) { return p1.includes(w); }) ? m : p1 + 'をもって';
+  });
+  text = text.replace(/(\S)を持ち/g, function(m, p1) {
+    var ph = ['手','荷物','カバン','鞄','傘','本','ボール'];
+    return ph.some(function(w) { return p1.includes(w); }) ? m : p1 + 'をもち';
+  });
+  return text;
+}
+function enforceMaxChars(text, max) {
+  if (!max) max = MAX_CHARS;
+  if (!text) return { text: '', trimmed: false };
+  text = text.replace(/持つ/g, 'もつ')
+             .replace(/持って/g, 'もって')
+             .replace(/持ち前/g, 'もち前')
+             .replace(/持った/g, 'もった')
+             .replace(/持ち/g, 'もち');
+  if (text.length <= max) return { text: text, trimmed: false };
+  var trimmed = text.substring(0, max);
+  var lastPeriod = trimmed.lastIndexOf('。');
+  if (lastPeriod >= 0) {
+    return { text: trimmed.substring(0, lastPeriod + 1), trimmed: true };
+  }
+  return { text: trimmed.substring(0, max - 1) + '。', trimmed: true };
+}
+
+
+
+function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+function cleanShokenText(text) {
+  text = text.replace(/^パターン[AB][\s：:]*/i, '');
+  text = text.replace(/^---.*?---\s*/g, '');
+  text = text.replace(/^[\s「」『』]+/, '');
+  text = text.replace(/[\s「」『』]+$/, '');
+  text = text.replace(/^\*+/g, '');
+  text = text.replace(/\*+$/g, '');
+  text = text.replace(/（\d+文字）/g, '');
+  text = text.replace(/\(\d+文字\)/g, '');
+  text = text.replace(/【.*?文字.*?】/g, '');
+  text = text.replace(/\n/g, '');
+  return text.trim();
+}
+
+async function callGemini(prompt, retryCount) {
+  retryCount = retryCount || 0;
+  var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + MODEL_NAME + ':generateContent?key=' + apiKey;
+  var body = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.8, maxOutputTokens: 512 } };
+  try {
+    var res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!res.ok) {
+      var ed = await res.json().catch(function() { return {}; });
+      var em = (ed && ed.error && ed.error.message) ? ed.error.message : res.statusText;
+      if (res.status === 429 && retryCount < 2) {
+        updateProgress(-1, '⏳ レート制限中...15秒待ちます');
+        await sleep(15000);
+        return callGemini(prompt, retryCount + 1);
+      }
+      throw new Error('API Error (' + res.status + '): ' + em);
+    }
+    var data = await res.json();
+    addUsage();
+    var resultText = '';
+    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+      var parts = data.candidates[0].content.parts;
+      for (var i = 0; i < parts.length; i++) { if (parts[i].text) resultText += parts[i].text; }
+    }
+    return resultText.trim();
+  } catch (e) {
+    if (retryCount < 1) { await sleep(5000); return callGemini(prompt, retryCount + 1); }
+    throw e;
+  }
+}
+function buildPrompt(type, f1, f2, f3, f4, prevText, revision) {
+  const voiceA = 'やわらかく温かい言葉を選んでください。親しみやすく、保護者が「うちの子をよく見てくれている」と安心できるような、日常的でやさしい語彙を使った表現にしてください。難しい言葉は避け、素朴で心に届く言葉選びを意識してください。';
+  const voiceB = '語彙力の豊かさが伝わる知的で洗練された表現を使ってください。「この先生は言葉をよく知っているな」と保護者に思わせるような、的確で格調ある言い回しを選んでください。比喩や慣用表現も適切に取り入れ、表現の幅広さを感じさせる文章にしてください。';
+  const voice = (type === 'A') ? voiceA : voiceB;
+
+  let base = '';
+  if (prevText && revision) {
+    base = '以下の所見文を修正してください。\n'
+      + '【元の所見】\n' + prevText + '\n'
+      + '【修正依頼】\n' + revision + '\n\n';
+  }
+
+  const prompt = base
+    + 'あなたはベテラン小学校教師であり、通知表の所見を書くプロのライターです。\n'
+    + '以下の3つの観点から、通知表の所見を3文で作成してください。\n\n'
+    + '【観点A】性格・行動面: ' + f1 + '\n'
+    + '【観点B】学習状況: ' + f2 + '\n'
+    + '【観点C】諸活動への取り組み: ' + f3 + '\n'
+    + (f4 ? '【補足情報】' + f4 + '\n' : '')
+    + '\n'
+    + '■ 構成ルール\n'
+    + '・第1文は【観点A】性格・行動面のみを扱うこと。\n'
+    + '・第2文は【観点B】学習状況のみを扱うこと。\n'
+    + '・第3文は【観点C】諸活動への取り組みを必ず具体的に書いた上で、これからへの意欲喚起を自然に含めること。第3文に観点Cの内容が入っていなければ絶対にやり直すこと。\n'
+    + '・各文はそれぞれの観点だけを扱い、複数の観点を1文にまとめないこと。\n'
+    + '・入力された語をそのまま繰り返さず、ニュアンスを汲み取って自分の言葉で書き直すこと。\n'
+    + '・生徒の頑張りを「結果」ではなく「過程・努力・工夫」に焦点を当てて評価すること。\n'
+    + '・入力にネガティブな要素がある場合は、ポジティブに言い換えること（例：落ち着きがない→好奇心旺盛、頑固→意志が強い）。\n\n'
+    + '■ 書き出しの技術\n'
+    + '・第1文の書き出しは以下のいずれかのパターンで始めること。\n'
+    + '  パターン1: その子の個性を象徴する一言から入る（例：「明るく朗らかな人柄で」）\n'
+    + '  パターン2: 具体的な行動の描写から直接入る（例：「毎朝、気持ちのよい挨拶で」）\n'
+    + '・余計な前置きや説明は省き、すぐに具体的な内容に入ること。\n\n'
+    + '■ 締めの技術\n'
+    + '・第3文の締めくくりには、これからへの期待や具体的な展望を自然に含めること。\n'
+    + '・「これからもこの調子で」のような漠然とした表現ではなく、その子の強みを活かした具体的な期待を述べること。\n'
+    + '・例：「これからも、この行動力を様々な場面で発揮してくれることを楽しみにしています」\n\n'
+    + '■ 文体ルール\n'
+    + '・' + voice + '\n'
+    + '・全文「です・ます調」で統一すること。文末は必ず「ます」「ました」「ています」「でした」のいずれかで終えること。\n'
+    + '・「だ」「である」「ている」「のようだ」「ておく」で終わる文は絶対に禁止。\n'
+    + '・「おられます」は誤用です。必ず「います」「ています」を使うこと。\n'
+    + '・「本生徒は」「○○さんは」のような主語は使わないこと。主語なしで文を始めること。\n\n'
+    + '■ 文末表現の重複回避（最重要）\n'
+    + '・同じ文末表現が2回連続してはいけない。これは絶対に守ること。\n'
+    + '・悪い例：「〜ました。〜ました。〜ました。」→ 3文とも同じ語尾で稚拙に見える。\n'
+    + '・良い例：「〜しています。〜が印象的でした。〜を楽しみにしています。」→ 3文とも語尾が異なり洗練された印象。\n'
+    + '・使える語尾のバリエーション：「〜ています」「〜ました」「〜でした」「〜が印象的でした」「〜を楽しみにしています」「〜を期待しています」「〜姿が見られました」\n\n'
+    + '■ 冗長表現の排除\n'
+    + '・「〜することができる」→「〜できる」「〜できました」に簡略化すること。\n'
+    + '・「〜など」を多用しないこと。\n'
+    + '・同じ一文の中で同じ言葉を繰り返さないこと。一文内はもちろん、隣り合う文でも同じ語の重複は避けること。\n'
+    + '・一文が長くなりすぎないこと。一文は40文字前後を目安にすること。\n\n'
+    + '■ 禁止表現（以下の語句は絶対に使わないこと）\n'
+    + '・「類稀なる」「目覚ましい活躍」「飛躍的な成長」「響き渡る」「光を放つ」\n'
+    + '・「深い洞察」「翼を広げ」「教室という舞台」「礎を築く」「才能を発揮」\n'
+    + '・大げさな詩的比喩や、中学生の通知表にふさわしくない格調高すぎる表現\n'
+    + '・その子が実際にやったことの延長線上にある、等身大の称賛を心がけること\n\n'
+    + '■ 論理ルール\n'
+    + '・各文の因果関係が自然であること。\n'
+    + '・「Aの姿はBの糧となる」のような意味の通らないつなげ方は禁止。\n'
+    + '・主語と述語の対応、原因と結果の関係が論理的に成立する文を書くこと。\n\n'
+    + '■ 文字数ルール\n'
+    + '・3文合計で115文字以上120文字以下に収めること。これは最重要ルールです。115文字未満は短すぎるので必ず115文字以上にすること。\n'
+    + '・120文字を超えた場合は表現を削り、115文字未満の場合は表現を足して、必ず115〜120文字の範囲で出力すること。\n'
+    + '・文字数を数えてから出力し、範囲外なら自分で調整してください。\n\n'
+    + '■ 表記ルール\n'
+    + '・「持つ」「持って」「持ち前」はひらがなで「もつ」「もって」「もち前」と書くこと。\n\n'
+    + '■ 出力ルール\n'
+    + '・出力は所見本文の3文のみ。パターン名・文字数・注釈・説明は一切不要。\n\n'
+    + '■ 良い例（このレベルの文章を目指してください）\n'
+    + '【パターンAの例】入力：明るくて元気な挨拶／理科の実験に意欲的／合唱コンクールで指揮者\n'
+    + '毎朝、気持ちのよい挨拶で教室の雰囲気を明るくしています。理科の実験では、結果の中にきまりを見つけようと粘り強く観察を続ける姿が印象的でした。合唱コンクールでは指揮者として仲間に声をかけ、クラスの心を一つにまとめていました。\n'
+    + '【パターンBの例】入力：明るくて元気な挨拶／理科の実験に意欲的／合唱コンクールで指揮者\n'
+    + '明るく朗らかな挨拶が、日々の学級生活に温かな空気を届けています。理科の実験では規則性を探る探究心を発揮し、粘り強く考察を重ねていました。合唱コンクールでは指揮者の役割を担い、的確な助言でクラス全体の調和を引き出していました。\n'
+    + '【語尾のバリエーション良い例】\n'
+    + '「〜しています。〜が印象的でした。〜を楽しみにしています。」→ 3文とも語尾が違って洗練されている\n'
+    + '【悪い例（こう書いてはいけない）】\n'
+    + '×「明るく元気な挨拶が響き渡り」→ 教室で「響き渡る」は大げさ\n'
+    + '×「類稀なる才能を発揮しています」→ 通知表には大げさすぎる\n'
+    + '×「成長への礎を築いてくれることを期待し」→ 因果関係が不自然、文末も不完全\n'
+    + '×「〜ました。〜ました。〜ました。」→ 語尾が3回連続で稚拙\n'
+    + '×「〜することができました」→ 冗長。「〜できました」で十分\n';
+
+  return prompt;
+}
+
+async function generateOnePattern(type, f1, f2, f3, f4) {
+  var prompt = buildPrompt(type, f1, f2, f3, f4, null, null);
+  var bestResult = '';
+  var bestTrimmed = false;
+
+  for (var attempt = 0; attempt < 2; attempt++) {
+    if (attempt > 0) await sleep(2000);
+    var raw = await callGemini(prompt); 
+    if (!raw) continue;
+    raw = cleanShokenText(raw);
+    raw = convertMotsu(raw);
+    if (raw.length >= MIN_CHARS && raw.length <= MAX_CHARS) return { text: raw, trimmed: false };
+    if (raw.length > MAX_CHARS) {
+      var tr = enforceMaxChars(raw);
+      if (tr.text.length >= MIN_CHARS && (!bestResult || tr.text.length > bestResult.length)) { bestResult = tr.text; bestTrimmed = true; }
+    }
+    if (raw.length >= 80 && raw.length < MIN_CHARS && !bestResult) { bestResult = raw; bestTrimmed = false; }
+  }
+  if (bestResult && bestResult.length > MAX_CHARS) { var ft = enforceMaxChars(bestResult); return { text: ft.text, trimmed: true }; }
+  return { text: bestResult || '生成に失敗しました。もう一度お試しください。', trimmed: bestTrimmed };
+}
+
+async function generateRevisedPattern(type, f1, f2, f3, f4, revision, prevText) {
+  var prompt = buildPrompt(type, f1, f2, f3, f4, revision, prevText);
+  var bestResult = '';
+  var bestTrimmed = false;
+
+  for (var attempt = 0; attempt < 2; attempt++) {
+    if (attempt > 0) await sleep(2000);
+    var raw = await callGemini(prompt);
+    if (!raw) continue;
+    raw = cleanShokenText(raw);
+    raw = convertMotsu(raw);
+    if (raw.length >= MIN_CHARS && raw.length <= MAX_CHARS) return { text: raw, trimmed: false };
+    if (raw.length > MAX_CHARS) {
+      var tr = enforceMaxChars(raw);
+      if (tr.text.length >= MIN_CHARS && (!bestResult || tr.text.length > bestResult.length)) { bestResult = tr.text; bestTrimmed = true; }
+    }
+    if (raw.length >= 80 && raw.length < MIN_CHARS && !bestResult) { bestResult = raw; bestTrimmed = false; }
+  }
+  if (bestResult && bestResult.length > MAX_CHARS) { var ft = enforceMaxChars(bestResult); return { text: ft.text, trimmed: true }; }
+  return { text: bestResult || '生成に失敗しました。もう一度お試しください。', trimmed: bestTrimmed };
+}
+
+function updateProgress(pct, msg) {
+  if (pct >= 0) document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('statusMsg').textContent = msg;
+}
+
+async function generateShoken() {
+  var name = document.getElementById('studentName').value.trim();
+  var f1 = document.getElementById('feature1').value.trim();
+  var f2 = document.getElementById('feature2').value.trim();
+  var f3 = document.getElementById('feature3').value.trim();
+  var f4 = document.getElementById('feature4').value.trim();
+  if (!f1 || !f2 || !f3) { alert('①②③の特徴は必ず入力してください。'); return; }
+  if (!apiKey) { alert('APIキーを先に設定してください。'); return; }
+
+  currentFeatures = { name: name, f1: f1, f2: f2, f3: f3, f4: f4 };
+  revisionHistory = [];
+  currentTrimmed = { A: false, B: false };
+
+  document.getElementById('step1').classList.add('hidden');
+  document.getElementById('step2').classList.remove('hidden');
+  document.getElementById('step2Buttons').classList.add('hidden');
+  document.getElementById('progressArea').classList.remove('hidden');
+  document.getElementById('patternsArea').innerHTML = '';
+
+  try {
+    updateProgress(20, 'パターンA を生成中...');
+    var rA = await generateOnePattern('A', f1, f2, f3, f4);
+    currentPatterns.A = rA.text; currentTrimmed.A = rA.trimmed;
+    await sleep(2000);
+    updateProgress(60, 'パターンB を生成中...');
+    var rB = await generateOnePattern('B', f1, f2, f3, f4);
+    currentPatterns.B = rB.text; currentTrimmed.B = rB.trimmed;
+    updateProgress(100, '生成完了！');
+    await sleep(400);
+    displayPatterns();
+    document.getElementById('progressArea').classList.add('hidden');
+    document.getElementById('step2Buttons').classList.remove('hidden');
+  } catch (e) {
+    document.getElementById('progressArea').classList.add('hidden');
+    document.getElementById('patternsArea').innerHTML = '<div style="color:#e53e3e;padding:16px;">⚠️ エラー：' + e.message + '</div>';
+    document.getElementById('step2Buttons').classList.remove('hidden');
+  }
+}
+
+function displayPatterns() {
+  var area = document.getElementById('patternsArea');
+  area.innerHTML = '';
+  var keys = ['A', 'B'];
+  var labels = { A: '表現パターンA', B: '表現パターンB' };
+
+  for (var k = 0; k < keys.length; k++) {
+    var key = keys[k];
+    var text = currentPatterns[key];
+    var len = text.length;
+    var isOk = len >= MIN_CHARS && len <= MAX_CHARS;
+    var wasTrimmed = currentTrimmed[key];
+    var div = document.createElement('div');
+    div.className = 'pattern-box';
+    div.id = 'pattern' + key;
+    var trimNotice = wasTrimmed ? '<div class="trim-notice">※ 126文字以内に自動調整しました。STEP3で微調整できます。</div>' : '';
+    div.innerHTML = '<div class="pattern-label">' + labels[key] + '</div>'
+      + '<div class="pattern-text">' + text + '</div>'
+      + '<div class="char-count ' + (isOk ? 'ok' : 'warn') + '">' + len + '文字 ' + (isOk ? '✅' : '⚠️ 範囲外') + '</div>'
+      + trimNotice;
+    (function(k2) { div.onclick = function() { highlightPattern(k2); }; })(key);
+    area.appendChild(div);
+  }
+}
+
+function highlightPattern(key) {
+  var boxes = document.querySelectorAll('.pattern-box');
+  for (var i = 0; i < boxes.length; i++) boxes[i].classList.remove('selected');
+  document.getElementById('pattern' + key).classList.add('selected');
+}
+
+function selectPattern(key) {
+  document.getElementById('finalEdit').value = currentPatterns[key];
+  updateFinalCount();
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step3').classList.remove('hidden');
+}
+
+function updateFinalCount() {
+  var len = document.getElementById('finalEdit').value.length;
+  var el = document.getElementById('finalCount');
+  var isOk = len >= MIN_CHARS && len <= MAX_CHARS;
+  var over = len > MAX_CHARS ? ('（' + (len - MAX_CHARS) + '文字オーバー！）') : '';
+  el.textContent = len + '文字' + (isOk ? ' ✅' : ' ⚠️ 110〜126文字にしてください' + over);
+  el.className = 'char-count ' + (isOk ? 'ok' : 'warn');
+}
+
+function requestRevision() { document.getElementById('revisionModal').classList.remove('hidden'); }
+function closeRevisionModal() { document.getElementById('revisionModal').classList.add('hidden'); document.getElementById('revisionInput').value = ''; }
+
+async function executeRevision() {
+  var revision = document.getElementById('revisionInput').value.trim();
+  if (!revision) { alert('修正内容を入力してください。'); return; }
+  closeRevisionModal();
+  revisionHistory.push(revision);
+  document.getElementById('step2Buttons').classList.add('hidden');
+  document.getElementById('progressArea').classList.remove('hidden');
+  document.getElementById('patternsArea').innerHTML = '';
+  currentTrimmed = { A: false, B: false };
+  var f = currentFeatures;
+  try {
+    updateProgress(20, '修正版パターンAを生成中...');
+    var rA = await generateRevisedPattern('A', f.f1, f.f2, f.f3, f.f4, revision, currentPatterns.A);
+    currentPatterns.A = rA.text; currentTrimmed.A = rA.trimmed;
+    await sleep(2000);
+    updateProgress(60, '修正版パターンBを生成中...');
+    var rB = await generateRevisedPattern('B', f.f1, f.f2, f.f3, f.f4, revision, currentPatterns.B);
+    currentPatterns.B = rB.text; currentTrimmed.B = rB.trimmed;
+    updateProgress(100, '再生成完了！');
+    await sleep(400);
+    displayPatterns();
+    document.getElementById('progressArea').classList.add('hidden');
+    document.getElementById('step2Buttons').classList.remove('hidden');
+  } catch (e) {
+    document.getElementById('progressArea').classList.add('hidden');
+    document.getElementById('patternsArea').innerHTML = '<div style="color:#e53e3e;padding:16px;">⚠️ エラー：' + e.message + '</div>';
+    document.getElementById('step2Buttons').classList.remove('hidden');
+  }
+}
+
+function confirmShoken() {
+  var text = document.getElementById('finalEdit').value.trim();
+  if (!text) { alert('所見が空です。'); return; }
+  if (text.length > MAX_CHARS) { alert('所見が' + text.length + '文字あります。' + MAX_CHARS + '文字以内に修正してください。'); return; }
+  var record = {
+    id: Date.now(), name: currentFeatures.name || ('生徒' + (shokenData.length + 1)),
+    feature1: currentFeatures.f1, feature2: currentFeatures.f2, feature3: currentFeatures.f3,
+    feature4: currentFeatures.f4 || '', shoken: text, charCount: text.length,
+    createdAt: new Date().toLocaleString('ja-JP')
+  };
+  shokenData.push(record);
+  localStorage.setItem('shoken_data', JSON.stringify(shokenData));
+  document.getElementById('step3').classList.add('hidden');
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step1').classList.remove('hidden');
+  document.getElementById('studentName').value = '';
+  document.getElementById('feature1').value = '';
+  document.getElementById('feature2').value = '';
+  document.getElementById('feature3').value = '';
+  document.getElementById('feature4').value = '';
+  updateDataDisplay();
+  alert('✅ ' + record.name + 'の所見を保存しました！（' + record.charCount + '文字）\n\n次の生徒の特徴を入力してください。');
+}
+
+function backToStep1() { document.getElementById('step2').classList.add('hidden'); document.getElementById('step1').classList.remove('hidden'); }
+function backToStep2() { document.getElementById('step3').classList.add('hidden'); document.getElementById('step2').classList.remove('hidden'); }
+
+function updateDataDisplay() {
+  document.getElementById('dataCount').textContent = shokenData.length;
+  var wrap = document.getElementById('dataTableWrap');
+  var expBtn = document.getElementById('exportBtn');
+  var csvBtn = document.getElementById('csvBtn');
+  var clrBtn = document.getElementById('clearBtn');
+  if (shokenData.length === 0) {
+    wrap.innerHTML = '<p style="color:#a0aec0;font-size:0.9em;">まだデータがありません</p>';
+    expBtn.disabled = true; csvBtn.disabled = true; clrBtn.disabled = true; return;
+  }
+  expBtn.disabled = false; csvBtn.disabled = false; clrBtn.disabled = false;
+  var html = '<table class="data-table"><thead><tr><th>#</th><th>生徒名</th><th>所見（抜粋）</th><th>文字数</th><th>操作</th></tr></thead><tbody>';
+  for (var i = 0; i < shokenData.length; i++) {
+    var d = shokenData[i];
+    var ex = d.shoken.length > 30 ? d.shoken.substring(0, 30) + '...' : d.shoken;
+    html += '<tr><td>' + (i+1) + '</td><td>' + d.name + '</td><td>' + ex + '</td><td>' + d.charCount + '</td><td><button class="btn btn-danger" style="padding:4px 10px;font-size:0.8em;" onclick="deleteRecord(' + d.id + ')">削除</button></td></tr>';
+  }
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function deleteRecord(id) {
+  if (!confirm('このデータを削除しますか？')) return;
+  shokenData = shokenData.filter(function(d) { return d.id !== id; });
+  localStorage.setItem('shoken_data', JSON.stringify(shokenData));
+  updateDataDisplay();
+}
+
+function clearAllData() {
+  if (!confirm('全データを消去しますか？')) return;
+  shokenData = [];
+  localStorage.setItem('shoken_data', JSON.stringify(shokenData));
+  updateDataDisplay();
+}
+
+function exportData() {
+  if (shokenData.length === 0) return;
+  var rows = [];
+  for (var i = 0; i < shokenData.length; i++) {
+    var d = shokenData[i];
+    rows.push({ '番号': i+1, '生徒名': d.name, '性格・行動面': d.feature1, '学習状況': d.feature2, '諸活動': d.feature3, 'その他': d.feature4, '所見': d.shoken, '文字数': d.charCount, '作成日時': d.createdAt });
+  }
+  var ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{ wch:5 },{ wch:12 },{ wch:25 },{ wch:25 },{ wch:25 },{ wch:20 },{ wch:50 },{ wch:7 },{ wch:18 }];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '所見データ');
+  XLSX.writeFile(wb, '所見データ_' + new Date().toISOString().slice(0,10) + '.xlsx');
+}
+
+function exportCSV() {
+  if (shokenData.length === 0) return;
+  var header = ['番号','生徒名','性格・行動面','学習状況','諸活動','その他','所見','文字数','作成日時'];
+  var lines = [header.map(function(h) { return '"' + h + '"'; }).join(',')];
+  for (var i = 0; i < shokenData.length; i++) {
+    var d = shokenData[i];
+    var row = [i+1, d.name, d.feature1, d.feature2, d.feature3, d.feature4, d.shoken, d.charCount, d.createdAt];
+    lines.push(row.map(function(c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(','));
+  }
+  var blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = '所見データ_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

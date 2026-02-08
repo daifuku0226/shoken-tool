@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gemini APIキー取得マニュアル</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', sans-serif; background: #f0f4f8; color: #2d3748; line-height: 1.8; }
+.container { max-width: 780px; margin: 0 auto; padding: 20px; }
+
+/* ヘッダー */
+header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 32px; border-radius: 16px; margin-bottom: 28px; text-align: center; }
+header h1 { font-size: 1.6em; margin-bottom: 6px; }
+header p { font-size: 0.95em; opacity: 0.9; }
+
+/* スライドカード */
+.slide { background: white; border-radius: 14px; padding: 28px 28px 20px; margin-bottom: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); position: relative; }
+.slide-number { position: absolute; top: -14px; left: 24px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1em; }
+.slide h2 { font-size: 1.2em; color: #4a5568; margin-bottom: 14px; padding-top: 8px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+.slide h3 { font-size: 1.05em; color: #553c9a; margin: 16px 0 8px; }
+.slide p { margin-bottom: 10px; font-size: 0.95em; }
+.slide ol, .slide ul { margin: 10px 0 14px 24px; font-size: 0.95em; }
+.slide li { margin-bottom: 8px; }
+
+/* ハイライトボックス */
+.highlight { background: #ebf8ff; border-left: 4px solid #3182ce; padding: 14px 16px; border-radius: 0 10px 10px 0; margin: 14px 0; font-size: 0.93em; color: #2c5282; }
+.highlight strong { color: #2b6cb0; }
+
+/* 警告ボックス */
+.warning { background: #fff5f5; border-left: 4px solid #e53e3e; padding: 14px 16px; border-radius: 0 10px 10px 0; margin: 14px 0; font-size: 0.93em; color: #9b2c2c; }
+.warning strong { color: #c53030; }
+
+/* 成功ボックス */
+.success { background: #f0fff4; border-left: 4px solid #38a169; padding: 14px 16px; border-radius: 0 10px 10px 0; margin: 14px 0; font-size: 0.93em; color: #276749; }
+
+/* つまずきポイント */
+.trouble { background: #fffff0; border: 2px solid #ecc94b; border-radius: 10px; padding: 16px; margin: 14px 0; }
+.trouble-title { font-weight: bold; color: #744210; font-size: 0.95em; margin-bottom: 8px; }
+.trouble p { font-size: 0.9em; color: #744210; margin-bottom: 6px; }
+
+/* コードブロック */
+.code-block { background: #2d3748; color: #e2e8f0; padding: 14px 18px; border-radius: 8px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; margin: 10px 0; word-break: break-all; position: relative; }
+.code-block .copy-btn { position: absolute; top: 8px; right: 10px; background: #4a5568; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.8em; cursor: pointer; }
+.code-block .copy-btn:hover { background: #667eea; }
+
+/* ボタン */
+.btn-link { display: inline-block; background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 1em; margin: 10px 0; transition: all 0.2s; }
+.btn-link:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+.btn-green { background: linear-gradient(135deg, #48bb78, #38a169); }
+.btn-green:hover { box-shadow: 0 4px 12px rgba(72,187,120,0.4); }
+
+/* 画像風の説明エリア */
+.screen-desc { background: #f7fafc; border: 2px dashed #cbd5e0; border-radius: 10px; padding: 18px; margin: 12px 0; text-align: center; color: #718096; font-size: 0.9em; }
+
+/* 比較テーブル */
+.compare-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.9em; }
+.compare-table th, .compare-table td { border: 1px solid #e2e8f0; padding: 10px 14px; text-align: left; }
+.compare-table th { background: #f7fafc; color: #4a5568; font-weight: bold; }
+.compare-table tr:nth-child(even) { background: #f7f8ff; }
+
+/* FAQ */
+.faq-item { margin-bottom: 16px; }
+.faq-q { font-weight: bold; color: #553c9a; font-size: 0.95em; margin-bottom: 4px; }
+.faq-a { font-size: 0.9em; color: #4a5568; padding-left: 16px; border-left: 3px solid #e2e8f0; }
+
+/* フッター */
+footer { text-align: center; padding: 20px; color: #a0aec0; font-size: 0.82em; }
+
+/* 目次 */
+.toc { background: white; border-radius: 14px; padding: 20px 28px; margin-bottom: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+.toc h2 { font-size: 1.1em; color: #4a5568; margin-bottom: 12px; }
+.toc ol { margin-left: 20px; font-size: 0.93em; }
+.toc li { margin-bottom: 6px; }
+.toc a { color: #667eea; text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+
+@media (max-width: 600px) {
+  .container { padding: 12px; }
+  header { padding: 20px; }
+  header h1 { font-size: 1.3em; }
+  .slide { padding: 20px 18px 16px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>📘 Gemini APIキー取得マニュアル</h1>
+    <p>所見作成アシスタントを使うための準備ガイド（所要時間：約5分）</p>
+  </header>
+
+  <!-- 目次 -->
+  <div class="toc">
+    <h2>📑 もくじ</h2>
+    <ol>
+      <li><a href="#slide1">はじめに ─ このマニュアルでやること</a></li>
+      <li><a href="#slide2">STEP1：Google AI Studio にアクセスする</a></li>
+      <li><a href="#slide3">STEP2：Googleアカウントでログインする</a></li>
+      <li><a href="#slide4">STEP3：プロジェクトを新規作成する</a></li>
+      <li><a href="#slide5">STEP4：APIキーを作成してコピーする</a></li>
+      <li><a href="#slide6">⚠️ つまずきポイント：「No Cloud Projects Available」の対処法</a></li>
+      <li><a href="#slide7">STEP5：アプリにAPIキーを設定する</a></li>
+      <li><a href="#slide8">STEP6：動作確認をする</a></li>
+      <li><a href="#slide9">APIキーの管理について</a></li>
+      <li><a href="#slide10">無料枠について知っておくこと</a></li>
+      <li><a href="#slide11">よくある質問（FAQ）</a></li>
+    </ol>
+  </div>
+
+  <!-- スライド1 -->
+  <div class="slide" id="slide1">
+    <div class="slide-number">1</div>
+    <h2>はじめに ─ このマニュアルでやること</h2>
+    <p>「所見作成アシスタント」は、Google の AI（Gemini）を使って通知表の所見文を自動生成するアプリです。</p>
+    <p>アプリを使うには <strong>APIキー</strong> という「合い鍵」が必要です。このマニュアルでは、その鍵の取得方法を説明します。</p>
+    <div class="highlight">
+      <strong>💡 APIキーとは？</strong><br>
+      アプリとGoogleのAIをつなぐための「通行証」のようなものです。キーは英数字の文字列（AIzaSy...で始まる）で、無料で取得できます。クレジットカードの登録は不要です。
+    </div>
+    <p><strong>必要なもの：</strong></p>
+    <ul>
+      <li>Googleアカウント（Gmail があればOK）</li>
+      <li>インターネットに接続できるパソコン</li>
+      <li>Chrome や Edge などのブラウザ</li>
+    </ul>
+  </div>
+
+  <!-- スライド2 -->
+  <div class="slide" id="slide2">
+    <div class="slide-number">2</div>
+    <h2>STEP1：Google AI Studio にアクセスする</h2>
+    <p>まず、APIキーを発行するためのサイトを開きます。</p>
+    <p>下のボタンをクリックしてください👇</p>
+    <a href="https://aistudio.google.com/apikey" target="_blank" class="btn-link">🔗 Google AI Studio を開く</a>
+    <div class="screen-desc">
+      📺 Google AI Studio のサイトが開きます。<br>英語で表示されることがありますが、そのまま進めてOKです。
+    </div>
+    <div class="highlight">
+      <strong>💡 ブックマーク推奨！</strong><br>
+      このページ（https://aistudio.google.com/apikey）をブックマークしておくと、後でキーを確認したいときに便利です。
+    </div>
+  </div>
+
+  <!-- スライド3 -->
+  <div class="slide" id="slide3">
+    <div class="slide-number">3</div>
+    <h2>STEP2：Googleアカウントでログインする</h2>
+    <p>Google AI Studio にアクセスすると、ログイン画面が表示されます（すでにログイン済みなら次へ進んでください）。</p>
+    <ol>
+      <li>お使いの <strong>Googleアカウント（Gmail）</strong> を選択</li>
+      <li>パスワードを入力してログイン</li>
+      <li>利用規約が表示されたら内容を確認して「同意する」をクリック</li>
+    </ol>
+    <div class="warning">
+      <strong>⚠️ 職場のGoogleアカウントの場合</strong><br>
+      学校や組織のGoogle Workspace アカウント（@xxx.ed.jp など）では、管理者の設定によりAPIキーの発行ができない場合があります。その場合は個人のGmailアカウントを使ってください。
+    </div>
+  </div>
+
+  <!-- スライド4 -->
+  <div class="slide" id="slide4">
+    <div class="slide-number">4</div>
+    <h2>STEP3：プロジェクトを新規作成する</h2>
+    <p>初めてAPIキーを作る場合、まず「プロジェクト」という入れ物を作ります。</p>
+
+    <h3>画面に「APIキーを作成」ボタンが見える場合</h3>
+    <ol>
+      <li>画面上部の <strong>「APIキーを作成」</strong>（または「Create API Key」）ボタンをクリック</li>
+      <li>ドロップダウンが開いたら <strong>「＋ プロジェクトを作成」</strong>（または「Create project」）を選択</li>
+      <li>数秒待つと、プロジェクトが自動的に作成されます</li>
+    </ol>
+
+    <div class="trouble" id="slide6">
+      <div class="trouble-title">⚠️ つまずきポイント：「No Cloud Projects Available」と表示されたら</div>
+      <p>これは <strong>「既存のプロジェクトが見つかりません」</strong> という意味で、エラーではありません！ 初めての方は必ずこの表示になります。</p>
+      <p><strong>対処法：</strong></p>
+      <ol>
+        <li>「インポートしたプロジェクトを選択」のドロップダウンは <strong>無視してOK</strong></li>
+        <li>その近くにある <strong>「＋ プロジェクトを作成」</strong>（または「＋ Create project」）をクリック</li>
+        <li>Googleが自動的にプロジェクトを作成してくれます</li>
+      </ol>
+      <p style="margin-top:8px;"><strong>「既存のプロジェクトでAPIキーを作成」は選ばないでください。</strong>プロジェクトがまだ無いので「No Cloud Projects Available」になります。必ず「新しいプロジェクト」の方を選んでください。</p>
+    </div>
+
+    <div class="highlight">
+      <strong>💡 もし「＋ プロジェクトを作成」が見つからない場合</strong><br>
+      ① 直接 <a href="https://aistudio.google.com/" target="_blank" style="color:#2b6cb0;">https://aistudio.google.com/</a> にアクセス<br>
+      ② 左メニューの「Get API key」（APIキーを取得）をクリック<br>
+      ③ 「Create API Key」ボタンが表示されるのでクリック<br>
+      この経路なら自動的にプロジェクトが作成されます。
+    </div>
+  </div>
+
+  <!-- スライド5 -->
+  <div class="slide" id="slide5">
+    <div class="slide-number">5</div>
+    <h2>STEP4：APIキーを作成してコピーする</h2>
+    <p>プロジェクトが作成されると、APIキーが自動的に発行されます。</p>
+
+    <ol>
+      <li>画面に <strong>「AIzaSy...」で始まる文字列</strong> が表示されます。これがAPIキーです！</li>
+      <li>キーの横にある <strong>「コピー」ボタン</strong>（📋アイコン）をクリック</li>
+      <li>キーがクリップボードにコピーされます</li>
+    </ol>
+
+    <div class="warning">
+      <strong>⚠️ 重要：キーは必ずこのタイミングでコピーしてください！</strong><br>
+      ページを閉じてしまうと、同じキーは二度と表示されません（ただし同じサイトで新しいキーを発行できます）。コピーしたらメモ帳などに一時的に貼り付けて保管しておくと安心です。
+    </div>
+
+    <div class="success">
+      <strong>✅ APIキーの例（この形式であればOK）</strong><br>
+      AIzaSyA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6（※これはダミーです）
+    </div>
+  </div>
+
+  <!-- スライド7 -->
+  <div class="slide" id="slide7">
+    <div class="slide-number">6</div>
+    <h2>STEP5：アプリにAPIキーを設定する</h2>
+    <p>取得したAPIキーを、所見作成アシスタントに登録します。</p>
+
+    <h3>アプリを開く</h3>
+    <p><strong>shoken_app.html</strong> をダブルクリックして、ブラウザで開いてください。</p>
+    <p>このマニュアルと同じフォルダに入っているはずです👇</p>
+    <div class="screen-desc">
+      📁 フォルダの中身：<br>
+      ├── 📄 <strong>shoken_app.html</strong>（所見作成アプリ本体）<br>
+      └── 📄 <strong>api_manual.html</strong>（このマニュアル）
+    </div>
+
+    <h3>APIキーを入力する</h3>
+    <ol>
+      <li>アプリ画面の上部に <strong>「🔑 Gemini APIキーを入力してください」</strong> という黄色い枠があります</li>
+      <li>入力欄にコピーしたAPIキーを <strong>貼り付け</strong>（Ctrl+V）</li>
+      <li><strong>「保存」ボタン</strong> をクリック</li>
+      <li>「✅ APIキーを保存しました！」と表示されたら成功です</li>
+    </ol>
+
+    <div class="highlight">
+      <strong>💡 APIキーは端末に保存されます</strong><br>
+      キーはブラウザのローカルストレージに保存されるため、次回からは再入力不要です。別のパソコンで使う場合は、そのパソコンでも同じキーを入力してください。
+    </div>
+  </div>
+
+  <!-- スライド8 -->
+  <div class="slide" id="slide8">
+    <div class="slide-number">7</div>
+    <h2>STEP6：動作確認をする</h2>
+    <p>APIキーが正しく設定されたか、テスト生成してみましょう。</p>
+
+    <h3>テスト用の入力例</h3>
+    <table class="compare-table">
+      <tr>
+        <th style="width:30%;">入力欄</th>
+        <th>入力例</th>
+      </tr>
+      <tr>
+        <td>生徒名</td>
+        <td>テスト太郎</td>
+      </tr>
+      <tr>
+        <td>① 性格・行動面</td>
+        <td>明るく社交的で、困っている友人にすすんで声をかける思いやりのある生徒</td>
+      </tr>
+      <tr>
+        <td>② 学習状況</td>
+        <td>理科の実験に強い関心をもち、レポートの考察が丁寧。数学は粘り強く取り組む</td>
+      </tr>
+      <tr>
+        <td>③ 諸活動</td>
+        <td>合唱コンクールでパートリーダーを務め、朝練を欠かさず参加した</td>
+      </tr>
+    </table>
+
+    <ol>
+      <li>上の例を入力欄に入れて <strong>「✨ 所見を生成する」</strong> をクリック</li>
+      <li>プログレスバーが動き、「パターンAを生成中...」→「パターンBを生成中...」と進みます</li>
+      <li>2つのパターンが表示されたら<strong>成功です！🎉</strong></li>
+    </ol>
+
+    <div class="trouble">
+      <div class="trouble-title">⚠️ エラーが出た場合のチェックリスト</div>
+      <p><strong>「API Error (400)」</strong> → APIキーの形式が正しくない可能性。AIzaSy...で始まるか確認。</p>
+      <p><strong>「API Error (403)」</strong> → APIキーが無効。Google AI Studio で新しいキーを発行してください。</p>
+      <p><strong>「API Error (429)」</strong> → 1日の無料枠を使い切りました。明日（太平洋時間の午前0時 = 日本時間の午後5時）にリセットされます。</p>
+    </div>
+  </div>
+
+  <!-- スライド9 -->
+  <div class="slide" id="slide9">
+    <div class="slide-number">8</div>
+    <h2>APIキーの管理について</h2>
+    <p>APIキーは大切な「通行証」です。以下の点に注意してください。</p>
+
+    <h3>やっていいこと ✅</h3>
+    <ul>
+      <li>同僚の先生に「APIキーの取得方法」を教える（このマニュアルを渡す）</li>
+      <li>自分のAPIキーを自分のパソコンで使う</li>
+      <li>不要になったキーを Google AI Studio で削除する</li>
+    </ul>
+
+    <h3>やってはいけないこと ❌</h3>
+    <ul>
+      <li>APIキーをSNSやブログに掲載する</li>
+      <li>APIキーをメールで送る（万が一の漏洩リスク）</li>
+      <li>他人のAPIキーを無断で使う</li>
+    </ul>
+
+    <div class="highlight">
+      <strong>💡 先生ごとに個別のAPIキーを取得するのがベストです</strong><br>
+      各先生が自分のGoogleアカウントでAPIキーを発行すれば、無料枠も先生ごとに独立して使えます。このマニュアル（api_manual.html）と shoken_app.html をセットで配布すれば、各自で設定できます。
+    </div>
+  </div>
+
+  <!-- スライド10 -->
+  <div class="slide" id="slide10">
+    <div class="slide-number">9</div>
+    <h2>無料枠について知っておくこと</h2>
+    <p>このアプリは <strong>Gemini 2.5 Flash-Lite</strong> という無料モデルを使っています。</p>
+
+    <table class="compare-table">
+      <tr>
+        <th>項目</th>
+        <th>内容</th>
+      </tr>
+      <tr>
+        <td>料金</td>
+        <td><strong>完全無料</strong>（クレジットカード不要）</td>
+      </tr>
+      <tr>
+        <td>1日あたりの上限</td>
+        <td>約 <strong>1,000リクエスト以上</strong></td>
+      </tr>
+      <tr>
+        <td>1人の所見に使うリクエスト</td>
+        <td>約2〜4回（パターンA + パターンB + リトライ分）</td>
+      </tr>
+      <tr>
+        <td>1日に作れる所見の目安</td>
+        <td><strong>約250人以上</strong>（余裕あり）</td>
+      </tr>
+      <tr>
+        <td>上限のリセット</td>
+        <td>毎日 太平洋時間 0:00（日本時間 17:00）</td>
+      </tr>
+    </table>
+
+    <div class="success">
+      <strong>✅ 1クラス40人の所見を作っても、無料枠の10分の1も使いません。安心して使えます！</strong>
+    </div>
+
+    <div class="warning">
+      <strong>⚠️ 個人情報の取り扱いについて</strong><br>
+      無料枠ではGoogleがデータを製品改善に使用する可能性があります。<strong>生徒の実名は入力せず、番号やイニシャルで管理する</strong>ことを強くおすすめします。アプリの「生徒名」欄には「1番」「A子」など匿名の識別情報を入力してください。
+    </div>
+  </div>
+
+  <!-- スライド11: FAQ -->
+  <div class="slide" id="slide11">
+    <div class="slide-number">10</div>
+    <h2>よくある質問（FAQ）</h2>
+
+    <div class="faq-item">
+      <div class="faq-q">Q1. APIキーは無料ですか？お金がかかりませんか？</div>
+      <div class="faq-a">はい、完全に無料です。クレジットカードの登録も不要です。このアプリが使っている Gemini 2.5 Flash-Lite は、1日1,000リクエスト以上の無料枠があります。</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q2. 「No Cloud Projects Available」と表示されて進めません</div>
+      <div class="faq-a">初めての方は必ずこうなります。「既存のプロジェクトで作成」ではなく、<strong>「＋ プロジェクトを作成」</strong>（Create project）をクリックしてください。詳しくはSTEP3の「つまずきポイント」をご覧ください。</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q3. 学校のGoogleアカウントでAPIキーが作れません</div>
+      <div class="faq-a">学校の管理者がAPI利用を制限している場合があります。個人のGmailアカウント（@gmail.com）でログインし直してから試してください。</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q4. APIキーを紛失してしまいました</div>
+      <div class="faq-a"><a href="https://aistudio.google.com/apikey" target="_blank" style="color:#667eea;">Google AI Studio</a> にアクセスすれば、発行済みのキーを確認できます。見つからない場合は新しいキーを発行してください（無料です）。</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q5. 429エラーが出て使えなくなりました</div>
+      <div class="faq-a">1日の無料枠を使い切った場合に表示されます。日本時間の17:00（太平洋時間の0:00）にリセットされるので、翌日に再度お試しください。通常の使用であれば上限に達することはほぼありません。</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q6. 生徒の個人情報を入力しても大丈夫ですか？</div>
+      <div class="faq-a">無料枠ではGoogleがデータを改善目的で利用する可能性があるため、<strong>生徒の実名は入力しないでください</strong>。「1番」「A子」など匿名化した情報を使うことをおすすめします。所見確定後にExcelで生徒名と対応づければ問題ありません。</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q7. 他の先生にもこのアプリを使ってもらいたいです</div>
+      <div class="faq-a"><strong>shoken_app.html</strong> と <strong>api_manual.html</strong> の2つのファイルを渡してください。各先生がこのマニュアルに沿って自分のAPIキーを取得すれば、すぐに使い始められます。</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q8. インターネットが使えない環境でも動きますか？</div>
+      <div class="faq-a">所見の生成にはインターネット接続が必要です（AIのサーバーと通信するため）。ただし、すでに生成・保存済みのデータの閲覧やExcel出力はオフラインでも可能です。</div>
+    </div>
+  </div>
+
+  <!-- 配布チェックリスト -->
+  <div class="slide">
+    <div class="slide-number">✓</div>
+    <h2>配布チェックリスト（管理者・配布者向け）</h2>
+    <p>先生方にアプリを配布する際の確認事項です。</p>
+    <table class="compare-table">
+      <tr>
+        <th style="width:10%;">✓</th>
+        <th>項目</th>
+      </tr>
+      <tr>
+        <td>□</td>
+        <td><strong>shoken_app.html</strong> を同梱した</td>
+      </tr>
+      <tr>
+        <td>□</td>
+        <td><strong>api_manual.html</strong>（このマニュアル）を同梱した</td>
+      </tr>
+      <tr>
+        <td>□</td>
+        <td>2つのファイルを <strong>同じフォルダ</strong> に入れた</td>
+      </tr>
+      <tr>
+        <td>□</td>
+        <td>「生徒名には実名を入れず番号で管理する」旨を伝えた</td>
+      </tr>
+      <tr>
+        <td>□</td>
+        <td>「APIキーは各自で取得する」旨を伝えた</td>
+      </tr>
+      <tr>
+        <td>□</td>
+        <td>動作確認テスト済み（Chrome or Edge で表示されることを確認）</td>
+      </tr>
+    </table>
+  </div>
+
+  <footer>
+    <p>所見作成アシスタント APIキー取得マニュアル v2.0</p>
+    <p>作成：あいこ ｜ 使用AI：Gemini 2.5 Flash-Lite（無料）</p>
+  </footer>
+
+</div>
+</body>
+</html>
