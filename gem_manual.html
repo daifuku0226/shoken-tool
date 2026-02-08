@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>通知表所見の匠 ─ Gem 登録・使い方マニュアル</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif; background: #f5f7fa; color: #333; line-height: 1.8; }
+  .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+  .header { background: linear-gradient(135deg, #1a73e8, #4285f4); color: #fff; padding: 40px 30px; border-radius: 16px; margin-bottom: 30px; text-align: center; }
+  .header h1 { font-size: 26px; margin-bottom: 8px; }
+  .header p { font-size: 14px; opacity: 0.9; }
+  .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 14px; border-radius: 20px; font-size: 12px; margin-top: 10px; }
+  .section { background: #fff; border-radius: 12px; padding: 28px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .section h2 { font-size: 20px; color: #1a73e8; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid #e8edf3; }
+  .section h3 { font-size: 16px; color: #333; margin: 18px 0 10px; }
+  .step-box { background: #f0f6ff; border-left: 4px solid #1a73e8; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 12px 0; }
+  .step-box .step-num { display: inline-block; background: #1a73e8; color: #fff; width: 28px; height: 28px; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: bold; margin-right: 10px; }
+  .warning-box { background: #fff8e1; border-left: 4px solid #f9a825; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 12px 0; font-size: 14px; }
+  .warning-box::before { content: "⚠️ "; }
+  .success-box { background: #e8f5e9; border-left: 4px solid #43a047; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 12px 0; font-size: 14px; }
+  .success-box::before { content: "✅ "; }
+  .tip-box { background: #f3e8fd; border-left: 4px solid #8e24aa; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 12px 0; font-size: 14px; }
+  .tip-box::before { content: "💡 "; }
+  .code-block { background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px; font-family: monospace; font-size: 13px; overflow-x: auto; margin: 10px 0; white-space: pre-wrap; }
+  .flow-box { background: #e3f2fd; padding: 20px; border-radius: 10px; margin: 14px 0; text-align: center; }
+  .flow-arrow { font-size: 24px; color: #1a73e8; margin: 6px 0; display: block; }
+  .flow-item { background: #fff; display: inline-block; padding: 8px 20px; border-radius: 8px; margin: 4px; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th { background: #1a73e8; color: #fff; padding: 10px; text-align: left; }
+  td { padding: 10px; border-bottom: 1px solid #e8edf3; }
+  tr:nth-child(even) { background: #f9fbfd; }
+  .faq-q { font-weight: bold; color: #1a73e8; margin-top: 14px; }
+  .faq-a { margin-left: 16px; margin-bottom: 14px; }
+  .footer { text-align: center; padding: 20px; font-size: 12px; color: #999; }
+  a { color: #1a73e8; }
+  ul, ol { margin-left: 20px; margin-bottom: 10px; }
+  li { margin-bottom: 6px; font-size: 15px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <h1>✏️ 通知表所見の匠</h1>
+  <p>Gem 登録・使い方マニュアル</p>
+  <span class="badge">無料 ─ Googleアカウントだけで利用可能</span>
+</div>
+
+<!-- ===== はじめに ===== -->
+<div class="section">
+  <h2>はじめに ─ このツールでできること</h2>
+  <p>「通知表所見の匠」は、Google Gemini の Gem（カスタムAI）機能を使った、中学校の先生のための所見文作成ツールです。</p>
+  <div class="success-box">Googleアカウントさえあれば、完全無料で利用できます。課金やAPIキーの取得は不要です。</div>
+  <h3>主な機能</h3>
+  <ul>
+    <li>3つの観点を入力するだけで、プロ品質の所見文を <strong>2パターン</strong> 自動生成</li>
+    <li>修正依頼にも対話形式で対応 ─ 「もう少し具体的に」と言えばすぐ書き直し</li>
+    <li>完成した所見を Notion / CSV（Excel用）でまとめて出力</li>
+    <li>ネガティブな特徴も前向きな表現に自動変換（リフレーミング）</li>
+    <li>文字数は 110〜126文字 を自動で調整</li>
+  </ul>
+</div>
+
+<!-- ===== PART 1: 管理者向け ===== -->
+<div class="section">
+  <h2>PART 1 ─ Gem の登録手順（管理者・配布者向け）</h2>
+  <p>Gem を作成し、先生方に共有リンクを配布する手順です。この作業は1回だけ行えばOKです。</p>
+
+  <div class="step-box">
+    <span class="step-num">1</span>
+    <strong>Gemini にアクセス</strong><br>
+    ブラウザで <a href="https://gemini.google.com" target="_blank">gemini.google.com</a> を開き、Googleアカウントでログインします。
+  </div>
+
+  <div class="step-box">
+    <span class="step-num">2</span>
+    <strong>Gem 作成画面を開く</strong><br>
+    左側メニューの「Gem を表示」（ひし形マーク）をクリック → 「＋ Gem を作成」をクリックします。
+  </div>
+
+  <div class="step-box">
+    <span class="step-num">3</span>
+    <strong>名前を入力</strong><br>
+    名前欄に以下を入力してください：<br>
+    <div class="code-block">通知表所見の匠</div>
+  </div>
+
+  <div class="step-box">
+    <span class="step-num">4</span>
+    <strong>カスタム指示を貼り付け</strong><br>
+    「カスタム指示」の欄に、配布されたプロンプト（「あなたは『通知表所見の匠』です。」から始まる全文）をそのまま貼り付けます。
+  </div>
+
+  <div class="warning-box">プロンプトは途中で切れないように、全文をコピーして貼り付けてください。一部が欠けると正しく動作しません。</div>
+
+  <div class="step-box">
+    <span class="step-num">5</span>
+    <strong>テスト実行</strong><br>
+    右側のチャット欄で、実際に入力して動作を確認します。<br>
+    <div class="code-block">【3番】
+① 明るくて元気な挨拶ができる
+② 理科の実験に意欲的
+③ 合唱コンクールで指揮者として活躍</div>
+    2パターンの所見が生成され、文字数が110〜126文字に収まっていれば成功です。
+  </div>
+
+  <div class="step-box">
+    <span class="step-num">6</span>
+    <strong>保存</strong><br>
+    問題なければ右上の「保存」をクリックして完成です。
+  </div>
+
+  <h3>共有リンクの発行</h3>
+
+  <div class="step-box">
+    <span class="step-num">7</span>
+    <strong>共有ボタンをクリック</strong><br>
+    保存後、Gem 一覧画面に戻ります。作成した「通知表所見の匠」の横にある <strong>共有アイコン</strong>（または ︙ メニュー → 「共有」）をクリックします。
+  </div>
+
+  <div class="step-box">
+    <span class="step-num">8</span>
+    <strong>共有設定を選ぶ</strong><br>
+    Google ドライブと同じ共有画面が表示されます。<br><br>
+    <strong>方法A：リンクで共有（おすすめ）</strong><br>
+    「リンクを知っている全員」に変更 → 「リンクをコピー」 → 先生方にリンクを配布<br><br>
+    <strong>方法B：メールアドレスで共有</strong><br>
+    共有したい先生のメールアドレスを入力して送信
+  </div>
+
+  <div class="tip-box">リンクで共有する方法が最も簡単です。職員チャットやメールに貼り付けるだけで全員に届きます。</div>
+</div>
+
+<!-- ===== PART 2: 利用者向け ===== -->
+<div class="section">
+  <h2>PART 2 ─ 使い方（先生方向け）</h2>
+
+  <h3>準備するもの</h3>
+  <ul>
+    <li>Googleアカウント（学校のものでも個人のものでもOK）</li>
+    <li>パソコンのブラウザ（Chrome / Edge 推奨）</li>
+    <li>共有されたリンク</li>
+  </ul>
+
+  <div class="success-box">課金は一切不要です。Googleアカウントでログインするだけで使えます。</div>
+
+  <h3>STEP 1：Gem を開く</h3>
+  <div class="step-box">
+    <span class="step-num">1</span>
+    共有されたリンクをクリックします。Gemini の画面が開き、「通知表所見の匠」のチャット画面になります。<br>
+    初回は「✏️ 通知表所見の匠へようこそ！」という挨拶が表示されます。
+  </div>
+
+  <h3>STEP 2：生徒の情報を入力する</h3>
+  <div class="step-box">
+    <span class="step-num">2</span>
+    以下の形式でチャット欄に入力し、送信します。<br>
+    <div class="code-block">【出席番号】
+① 性格・行動面の特徴
+② 学習状況
+③ 諸活動への取り組み
+④ その他・補足（任意）</div>
+    <strong>入力例：</strong>
+    <div class="code-block">【5番】
+① 思いやりがある
+② どの教科でも挙手発言
+③ 掃除熱心</div>
+  </div>
+
+  <div class="tip-box">短い単語でも、詳しい文章でもどちらでもOKです。キーワードだけでも十分に所見を生成できます。</div>
+
+  <h3>STEP 3：2パターンから選ぶ</h3>
+  <div class="step-box">
+    <span class="step-num">3</span>
+    <strong>表現パターンA</strong>（やわらかく温かい表現）と<strong>表現パターンB</strong>（巧みで印象に残る表現）の2パターンが表示されます。<br><br>
+    <strong>修正したい場合：</strong>修正内容をそのまま書いて送信してください。<br>
+    例：「Aの第2文をもう少し具体的にして」「Bの文末を変えて」<br><br>
+    <strong>そのまま完成の場合：</strong><code>Y</code> と入力して送信してください。
+  </div>
+
+  <h3>STEP 4：次の生徒へ</h3>
+  <div class="step-box">
+    <span class="step-num">4</span>
+    <code>Y</code> を送信すると「🎉 所見が完成しました！」と表示され、次の生徒の入力を求められます。<br>
+    STEP 2〜4 を生徒の人数分繰り返します。
+  </div>
+
+  <h3>STEP 5：まとめて出力</h3>
+  <div class="step-box">
+    <span class="step-num">5</span>
+    全員分が終わったら、チャット欄に <code>まとめ</code> と入力して送信します。<br><br>
+    完成した所見が出席番号順に一覧表示され、出力形式を選べます。<br><br>
+    <strong>A：Notion形式</strong> → Notion にそのまま貼り付けられるテーブル<br>
+    <strong>B：CSV形式（Excel用）</strong> → メモ帳に貼り付けて「所見一覧.csv」で保存 → Excelで開く<br>
+    <strong>C：両方</strong> → Notion と CSV の両方を出力
+  </div>
+
+  <h3>全体の流れ</h3>
+  <div class="flow-box">
+    <span class="flow-item">リンクを開く</span>
+    <span class="flow-arrow">↓</span>
+    <span class="flow-item">出席番号＋3観点を入力</span>
+    <span class="flow-arrow">↓</span>
+    <span class="flow-item">2パターンから選ぶ（修正も可）</span>
+    <span class="flow-arrow">↓</span>
+    <span class="flow-item">Y で確定 → 次の生徒へ</span>
+    <span class="flow-arrow">↓</span>
+    <span class="flow-item">全員完了 →「まとめ」で一括出力</span>
+  </div>
+</div>
+
+<!-- ===== CSV保存手順 ===== -->
+<div class="section">
+  <h2>CSV ファイルの保存手順（Excel で開く方法）</h2>
+
+  <div class="step-box">
+    <span class="step-num">1</span>
+    「まとめ」→「B：CSV形式」を選択すると、カンマ区切りのテキストが表示されます。
+  </div>
+
+  <div class="step-box">
+    <span class="step-num">2</span>
+    表示されたテキスト全体をコピーします（Ctrl+A → Ctrl+C）。
+  </div>
+
+  <div class="step-box">
+    <span class="step-num">3</span>
+    パソコンで「メモ帳」（Windows）または「テキストエディット」（Mac）を開きます。
+  </div>
+
+  <div class="step-box">
+    <span class="step-num">4</span>
+    コピーしたテキストを貼り付けます（Ctrl+V）。
+  </div>
+
+  <div class="step-box">
+    <span class="step-num">5</span>
+    「名前を付けて保存」→ ファイル名を <code>所見一覧.csv</code> にして保存します。<br>
+    <div class="warning-box">拡張子を必ず <code>.csv</code> にしてください。<code>.txt</code> のままだと Excel でセルに分かれません。</div>
+  </div>
+
+  <div class="step-box">
+    <span class="step-num">6</span>
+    保存した <code>所見一覧.csv</code> をダブルクリックすると、Excel で開きます。出席番号・所見本文・文字数がセルに分かれて表示されます。
+  </div>
+
+  <div class="tip-box">文字化けする場合は、Excel の「データ」タブ →「テキストファイルから」→ 文字コード「UTF-8」を選択してインポートしてください。</div>
+</div>
+
+<!-- ===== 入力のコツ ===== -->
+<div class="section">
+  <h2>入力のコツ ─ より良い所見を生成するために</h2>
+
+  <table>
+    <tr><th>こう入力すると</th><th>こんな所見になります</th></tr>
+    <tr><td>「明るい」（短い単語）</td><td>AIが解釈を広げて書くため、やや一般的な表現になりやすい</td></tr>
+    <tr><td>「毎朝、教室に入ると必ず元気な声で挨拶する」（具体的な描写）</td><td>その子らしいエピソードが入った、具体性のある所見になる</td></tr>
+    <tr><td>「声が小さい」（ネガティブ）</td><td>「穏やかで落ち着いた雰囲気」のように前向きに変換される</td></tr>
+  </table>
+
+  <div class="tip-box">迷ったら、短い単語でも大丈夫です。まず生成してみて、修正依頼で具体的にしていく方法が効率的です。</div>
+</div>
+
+<!-- ===== 注意事項 ===== -->
+<div class="section">
+  <h2>注意事項 ─ 必ずお読みください</h2>
+
+  <h3>個人情報の取り扱い</h3>
+  <div class="warning-box">生徒の氏名は入力しないでください。出席番号で管理し、通知表への転記時に名前と対応づけてください。</div>
+  <p>Gemini の無料版では、入力内容が Google の品質改善に利用される可能性があります。個人が特定できる情報（氏名・住所等）は絶対に入力しないでください。</p>
+
+  <h3>生成された所見の確認</h3>
+  <p>AIが生成した文章は必ず先生ご自身の目で確認してください。事実と異なる内容や、違和感のある表現がないか、最終チェックは人間の責任です。</p>
+
+  <h3>利用上限について</h3>
+  <p>Gemini 無料版には1日あたりの利用回数に上限があります。大量の所見を一度に作成する場合は、数日に分けて作業することをおすすめします。</p>
+</div>
+
+<!-- ===== FAQ ===== -->
+<div class="section">
+  <h2>よくある質問（FAQ）</h2>
+
+  <p class="faq-q">Q1. 料金はかかりますか？</p>
+  <p class="faq-a">いいえ、完全無料です。Googleアカウントでログインするだけで使えます。クレジットカードの登録も不要です。</p>
+
+  <p class="faq-q">Q2. スマートフォンでも使えますか？</p>
+  <p class="faq-a">はい、スマートフォンのブラウザからも利用できます。ただし、入力や出力のコピーはパソコンの方が快適です。</p>
+
+  <p class="faq-q">Q3. 共有リンクを開いても「Gem が見つかりません」と表示されます。</p>
+  <p class="faq-a">Googleアカウントにログインしていない可能性があります。ブラウザで Google にログインした状態でリンクを開いてください。</p>
+
+  <p class="faq-q">Q4. 途中でブラウザを閉じてしまいました。それまでの所見は残っていますか？</p>
+  <p class="faq-a">Gemini のチャット履歴に残っている場合があります。左側メニューから過去のチャットを確認してください。ただし確実ではないので、こまめに「まとめ」で出力しておくことをおすすめします。</p>
+
+  <p class="faq-q">Q5. 「Y」と入力したのに次に進みません。</p>
+  <p class="faq-a">大文字の「Y」を半角で入力してください。全角の「Ｙ」や小文字の「y」でも認識する場合がありますが、うまくいかない場合は半角大文字の「Y」を試してください。</p>
+
+  <p class="faq-q">Q6. 文字数が126文字を超えて生成されることがあります。</p>
+  <p class="faq-a">Gemini が文字数を正確に守れないことがあります。その場合は「120文字以内にして」と修正依頼を出してください。</p>
+
+  <p class="faq-q">Q7. CSV を Excel で開いたら文字化けしました。</p>
+  <p class="faq-a">Excel の「データ」タブ →「テキストまたはCSVから」→ ファイルを選択 → 文字コードを「UTF-8」に変更してインポートしてください。</p>
+
+  <p class="faq-q">Q8. 所見の内容に事実と違う部分がありました。</p>
+  <p class="faq-a">AI は入力されたキーワードから推測して文章を作成するため、事実と異なる内容が含まれることがあります。生成された所見は必ず先生ご自身で確認し、必要に応じて修正してください。</p>
+
+  <p class="faq-q">Q9. 学校全体で導入したいのですが、何か手続きは必要ですか？</p>
+  <p class="faq-a">特別な手続きは不要です。管理者が Gem を作成して共有リンクを配布すれば、すぐに使い始められます。ただし、生徒の個人情報の取り扱いについて、学校のルールに基づいて運用方針を決めておくことをおすすめします。</p>
+</div>
+
+<!-- ===== 配布チェックリスト ===== -->
+<div class="section">
+  <h2>配布チェックリスト（管理者向け）</h2>
+  <table>
+    <tr><th>チェック</th><th>項目</th></tr>
+    <tr><td>☐</td><td>Gem の作成が完了し、テスト生成で正常動作を確認した</td></tr>
+    <tr><td>☐</td><td>共有リンクを発行し、「リンクを知っている全員」に設定した</td></tr>
+    <tr><td>☐</td><td>先生方にリンクとこのマニュアルをセットで配布した</td></tr>
+    <tr><td>☐</td><td>「生徒の氏名は入力しない（出席番号で管理）」ルールを周知した</td></tr>
+    <tr><td>☐</td><td>生成された所見は必ず先生本人が最終確認するルールを周知した</td></tr>
+    <tr><td>☐</td><td>CSV の保存方法と Excel での開き方を説明した（または本マニュアルを参照するよう案内した）</td></tr>
+  </table>
+</div>
+
+<div class="footer">
+  通知表所見の匠 ─ Gem 登録・使い方マニュアル ─ ver.1.0（2026年2月）
+</div>
+
+</div>
+</body>
+</html>
